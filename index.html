@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>강남 옵 헤이 런치패드</title>
+  <meta name="description" content="강남스타일 밈 효과음 런치패드 — 버튼을 눌러 재생하세요">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="nav-logo">🎤 옵헤이</a>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link active" data-i18n="nav_pad">런치패드</a>
+      <a href="maker.html" class="nav-link" data-i18n="nav_maker">메이커</a>
+    </div>
+    <div class="nav-right">
+      <div class="lang-toggle">
+        <button class="lang-btn active" data-lang="ko">한국어</button>
+        <button class="lang-btn" data-lang="en">EN</button>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <h1 class="page-title"><span data-i18n="pad_title">강남 옵 헤이</span></h1>
+    <p class="page-subtitle" data-i18n="pad_subtitle">버튼을 눌러 효과음을 재생하세요 🎵</p>
+
+    <div class="controls-bar">
+      <button class="btn-stop" id="btnStop" data-i18n="stop_all">⏹ 전체 정지</button>
+      <div class="vol-wrap">
+        <span data-i18n="volume">볼륨</span>
+        <input type="range" id="volSlider" min="0" max="100" value="60">
+      </div>
+    </div>
+
+    <div class="pad-grid" id="padGrid"></div>
+
+    <p class="disclaimer" data-i18n="disclaimer"></p>
+  </main>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/launchpad.js"></script>
+</body>
+</html>

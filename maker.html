@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>강남스타일 메이커</title>
+  <meta name="description" content="강남스타일 효과음으로 나만의 비트를 만들어보세요">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="nav-logo">🎤 옵헤이</a>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link" data-i18n="nav_pad">런치패드</a>
+      <a href="maker.html" class="nav-link active" data-i18n="nav_maker">메이커</a>
+    </div>
+    <div class="nav-right">
+      <div class="lang-toggle">
+        <button class="lang-btn active" data-lang="ko">한국어</button>
+        <button class="lang-btn" data-lang="en">EN</button>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <h1 class="page-title"><span data-i18n="maker_title">강남스타일 메이커</span></h1>
+    <p class="page-subtitle" data-i18n="maker_subtitle">셀을 클릭해 비트를 만들어보세요</p>
+
+    <div class="maker-controls">
+      <button class="btn-primary" id="btnPlay" data-i18n="play">▶ 재생</button>
+      <button class="btn-secondary" id="btnClear" data-i18n="clear">🗑 초기화</button>
+      <div class="bpm-wrap">
+        <span data-i18n="bpm">BPM</span>
+        <input type="range" id="bpmSlider" min="60" max="200" value="120">
+        <span class="bpm-val" id="bpmVal">120</span>
+      </div>
+    </div>
+
+    <div class="sequencer-wrap">
+      <div class="seq-grid" id="seqGrid" style="grid-template-columns: 110px repeat(16, minmax(36px, 1fr));"></div>
+    </div>
+
+    <p class="disclaimer" data-i18n="disclaimer"></p>
+  </main>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/maker.js"></script>
+</body>
+</html>
