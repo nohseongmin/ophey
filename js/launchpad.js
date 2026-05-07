@@ -1,11 +1,13 @@
 const SOUNDS = [
-  { id:'gangnam',ko:'강남',      en:'Gangnam',       emoji:'🕺', freq:392, type:'square',   dur:0.7, clr:'#8338ec' },
-  { id:'ophey',  ko:'옵 헤이',   en:'Op Hey',        emoji:'🎤', freq:523, type:'sine',     dur:0.9, clr:'#ff006e' },
-  { id:'human',  ko:'인간 여자', en:'Human Woman',   emoji:'👩', freq:330, type:'triangle', dur:0.7, clr:'#ff4dac' },
-  { id:'sanae',  ko:'사나에',    en:'Sanae',         emoji:'🌸', freq:660, type:'sine',     dur:0.6, clr:'#00f5d4' },
-  { id:'bumpy',  ko:'울퉁불퉁',  en:'Bumpy',         emoji:'💪', freq:200, type:'sawtooth', dur:0.5, clr:'#ffbe0b' },
-  { id:'uhh',    ko:'uhh',       en:'uhh',           emoji:'😮', freq:150, type:'triangle', dur:0.4, clr:'#8338ec' },
-  { id:'eeeee',  ko:'에에에에',  en:'Eeeeee',        emoji:'😱', freq:880, type:'sine',     dur:1.0, clr:'#ff006e' },
+  { id:'gangnam',ko:'강남',    en:'Gangnam', emoji:'🕺', freq:392, type:'square',   dur:0.6, clr:'#8338ec' },
+  { id:'op',     ko:'옵',      en:'Op',      emoji:'🎙️', freq:480, type:'sine',     dur:0.4, clr:'#ff006e' },
+  { id:'hey',    ko:'헤이',    en:'Hey',     emoji:'🎤', freq:560, type:'sine',     dur:0.5, clr:'#ff4dac' },
+  { id:'human',  ko:'인간',    en:'Human',   emoji:'🧑', freq:330, type:'triangle', dur:0.5, clr:'#00f5d4' },
+  { id:'woman',  ko:'여자',    en:'Woman',   emoji:'👩', freq:280, type:'triangle', dur:0.5, clr:'#ff006e' },
+  { id:'sanae',  ko:'사나에',  en:'Sanae',   emoji:'🌸', freq:660, type:'sine',     dur:0.6, clr:'#8338ec' },
+  { id:'uhh',    ko:'uhh',     en:'uhh',     emoji:'😮', freq:150, type:'triangle', dur:0.4, clr:'#ffbe0b' },
+  { id:'eeeee',  ko:'에에에',  en:'Eee',     emoji:'😱', freq:880, type:'sine',     dur:0.9, clr:'#ff006e' },
+  { id:'bumpy',  ko:'울퉁불퉁',en:'Bumpy',   emoji:'💪', freq:200, type:'sawtooth', dur:0.5, clr:'#00f5d4' },
 ];
 
 let audioCtx = null;
