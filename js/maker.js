@@ -197,9 +197,15 @@ function exportPattern() {
   shareInput.value = code;
   shareInput.select();
   navigator.clipboard.writeText(code).then(() => {
-    alert('패턴 코드가 클립보드에 복사되었습니다!\n친구에게 공유해보세요.');
+    const btn = document.getElementById('btnExport');
+    const originalText = btn.textContent;
+    btn.textContent = '✔️ 복사완료';
+    setTimeout(() => btn.textContent = originalText, 2000);
   }).catch(() => {
-    alert('코드가 생성되었습니다. 직접 복사해주세요.');
+    const btn = document.getElementById('btnExport');
+    const originalText = btn.textContent;
+    btn.textContent = '❌ 직접 복사';
+    setTimeout(() => btn.textContent = originalText, 2000);
   });
 }
 
@@ -210,7 +216,10 @@ function importPattern() {
   
   const bytes = base64ToBytes(code);
   if (!bytes || bytes.length === 0) {
-    alert('잘못된 코드 형식입니다.');
+    const btn = document.getElementById('btnImport');
+    const originalText = btn.textContent;
+    btn.textContent = '❌ 형식 오류';
+    setTimeout(() => btn.textContent = originalText, 2000);
     return;
   }
   
@@ -243,7 +252,11 @@ function importPattern() {
       }
     }
   });
-  alert('패턴을 성공적으로 불러왔습니다!');
+  
+  const btn = document.getElementById('btnImport');
+  const originalText = btn.textContent;
+  btn.textContent = '✔️ 적용완료';
+  setTimeout(() => btn.textContent = originalText, 2000);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
