@@ -151,6 +151,71 @@ function clearGrid() {
   applyLang();
 }
 
+function exportPattern() {
+  let parts = [bpm];
+  MAKER_SOUNDS.forEach((s, ri) => {
+    let rowVal = 0;
+    if (grid[ri]) {
+      for (let c = 0; c < COLS; c++) {
+        if (grid[ri][c]) rowVal |= (1 << c);
+      }
+    }
+    parts.push(rowVal.toString(16).padStart(4, '0'));
+  });
+  const code = parts.join('-');
+  const shareInput = document.getElementById('shareInput');
+  shareInput.value = code;
+  shareInput.select();
+  navigator.clipboard.writeText(code).then(() => {
+    alert('패턴 코드가 클립보드에 복사되었습니다!\n친구에게 공유해보세요.');
+  }).catch(() => {
+    alert('코드가 생성되었습니다. 직접 복사해주세요.');
+  });
+}
+
+function importPattern() {
+  const shareInput = document.getElementById('shareInput');
+  const code = shareInput.value.trim();
+  if (!code) return;
+  const parts = code.split('-');
+  if (parts.length < 2) {
+    alert('잘못된 코드 형식입니다.');
+    return;
+  }
+  
+  const newBpm = parseInt(parts[0], 10);
+  if (!isNaN(newBpm) && newBpm >= 60 && newBpm <= 200) {
+    bpm = newBpm;
+    document.getElementById('bpmSlider').value = bpm;
+    document.getElementById('bpmVal').textContent = bpm;
+    if (isPlaying) { stopPlay(); startPlay(); }
+  }
+  
+  for (let ri = 0; ri < MAKER_SOUNDS.length; ri++) {
+    if (ri + 1 < parts.length) {
+      const rowVal = parseInt(parts[ri + 1], 16);
+      if (!isNaN(rowVal)) {
+        grid[ri] = grid[ri] || new Array(COLS).fill(false);
+        for (let c = 0; c < COLS; c++) {
+          grid[ri][c] = (rowVal & (1 << c)) !== 0;
+        }
+      }
+    }
+  }
+  
+  MAKER_SOUNDS.forEach((s, ri) => {
+    if (grid[ri]) {
+      for (let c = 0; c < COLS; c++) {
+        const cell = document.querySelector(`.seq-cell[data-row="${ri}"][data-col="${c}"]`);
+        if (cell) {
+          cell.classList.toggle('active', grid[ri][c]);
+        }
+      }
+    }
+  });
+  alert('패턴을 성공적으로 불러왔습니다!');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   preloadMakerSounds();
   buildSeqGrid();
@@ -159,6 +224,11 @@ document.addEventListener('DOMContentLoaded', () => {
     isPlaying ? stopPlay() : startPlay();
   });
   document.getElementById('btnClear').addEventListener('click', clearGrid);
+  
+  const btnExport = document.getElementById('btnExport');
+  if (btnExport) btnExport.addEventListener('click', exportPattern);
+  const btnImport = document.getElementById('btnImport');
+  if (btnImport) btnImport.addEventListener('click', importPattern);
 
   const bpmSlider = document.getElementById('bpmSlider');
   const bpmVal = document.getElementById('bpmVal');

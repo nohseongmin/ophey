@@ -36,6 +36,12 @@
       </div>
     </div>
 
+    <div class="share-wrap" style="display: flex; gap: 8px; margin-bottom: 24px; align-items: center; justify-content: center; flex-wrap: wrap;">
+      <input type="text" id="shareInput" placeholder="공유 코드를 붙여넣기 하세요" style="padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; width: 300px; font-family: monospace;">
+      <button class="btn-secondary" id="btnImport" style="padding: 8px 16px; font-size: 0.9rem;">불러오기</button>
+      <button class="btn-primary" id="btnExport" style="padding: 8px 16px; font-size: 0.9rem; background: linear-gradient(135deg, #8338ec, #3a0ca3);">현재 패턴 복사</button>
+    </div>
+
     <div class="sequencer-wrap">
       <div class="seq-grid" id="seqGrid" style="grid-template-columns: 110px repeat(16, minmax(36px, 1fr));"></div>
     </div>
