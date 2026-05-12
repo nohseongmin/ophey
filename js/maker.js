@@ -3,20 +3,19 @@
 // ──────────────────────────────────────────────
 
 const MAKER_SOUNDS = [
-  { id: 'gangnam', ko: '강남', en: 'Gangnam', emoji: '🕺', clr: '#8338ec', file: 'audio/강남.MP3', accent: { freq: 130, type: 'sawtooth', dur: 0.25 } },
-  { id: 'op', ko: '옵', en: 'Op', emoji: '🎙️', clr: '#ff006e', file: 'audio/옵.MP3', accent: { freq: 480, type: 'sine', dur: 0.15 } },
-  { id: 'hey', ko: '헤이', en: 'Hey', emoji: '🎤', clr: '#ff4dac', file: 'audio/헤이.MP3', accent: { freq: 600, type: 'sine', dur: 0.4 } },
-  { id: 'ophey', ko: '옵 헤이', en: 'Op Hey', emoji: '🔥', clr: '#ff006e', file: 'audio/ophey.mp3', accent: { freq: 520, type: 'sine', dur: 0.5 } },
-  { id: 'gangnamstyle', ko: '강남스타일', en: 'Gangnam Style', emoji: '💥', clr: '#8338ec', file: 'audio/강남style.MP3', accent: { freq: 150, type: 'sawtooth', dur: 0.3 } },
-  { id: 'human', ko: '인간', en: 'Human', emoji: '🧑', clr: '#00f5d4', file: 'audio/인간.MP3', accent: { freq: 340, type: 'triangle', dur: 0.3 } },
-  { id: 'human_like', ko: '인간적인', en: 'Human-like', emoji: '😌', clr: '#ffbe0b', file: 'audio/인간적인.MP3', accent: { freq: 350, type: 'triangle', dur: 0.35 } },
-  { id: 'sanae', ko: '사나이', en: 'Real Man', emoji: '💪', clr: '#00f5d4', file: 'audio/싸나에.MP3', accent: { freq: 220, type: 'triangle', dur: 0.5 } },
-  { id: 'bumpy', ko: '울퉁불퉁', en: 'Bumpy', emoji: '🏋️', clr: '#00f5d4', file: 'audio/울퉁붕퉁.MP3', accent: { freq: 80, type: 'sawtooth', dur: 0.4 } },
-  { id: 'uhh', ko: 'Uhh', en: 'Uhh', emoji: '😮', clr: '#ffbe0b', file: 'audio/uhhh.MP3', accent: { freq: 150, type: 'triangle', dur: 0.4 } },
-  { id: 'running', ko: '뛰는놈', en: 'Running', emoji: '🏃', clr: '#ffbe0b', file: 'audio/뛰는놈.MP3', accent: { freq: 400, type: 'sine', dur: 0.3 } },
-  { id: 'flying', ko: '나는놈', en: 'Flying', emoji: '🦅', clr: '#00f5d4', file: 'audio/나는놈.MP3', accent: { freq: 800, type: 'sine', dur: 0.6 } },
-  { id: 'woman', ko: '여자', en: 'Woman', emoji: '💃', clr: '#ff4dac', file: 'audio/여짜.mp3', accent: { freq: 440, type: 'sine', dur: 0.45 } },
-  { id: 'perfect', ko: '완전', en: 'Perfect', emoji: '✨', clr: '#ff006e', file: 'audio/완전.MP3', accent: { freq: 500, type: 'sine', dur: 0.3 } }
+  { id: 'gangnam', ko: '강남', en: 'Gangnam', emoji: '🕺', clr: '#8338ec', file: 'audio/강남.MP3' },
+  { id: 'op', ko: '옵', en: 'Op', emoji: '🎙️', clr: '#ff006e', file: 'audio/옵.MP3' },
+  { id: 'hey', ko: '헤이', en: 'Hey', emoji: '🎤', clr: '#ff4dac', file: 'audio/헤이.MP3' },
+  { id: 'gangnamstyle', ko: '강남스타일', en: 'Gangnam Style', emoji: '💥', clr: '#8338ec', file: 'audio/강남style.MP3' },
+  { id: 'human', ko: '인간', en: 'Human', emoji: '🧑', clr: '#00f5d4', file: 'audio/인간.MP3' },
+  { id: 'human_like', ko: '인간적인', en: 'Human-like', emoji: '😌', clr: '#ffbe0b', file: 'audio/인간적인.MP3' },
+  { id: 'sanae', ko: '사나이', en: 'Real Man', emoji: '💪', clr: '#00f5d4', file: 'audio/싸나에.MP3' },
+  { id: 'bumpy', ko: '울퉁불퉁', en: 'Bumpy', emoji: '🏋️', clr: '#00f5d4', file: 'audio/울퉁붕퉁.MP3' },
+  { id: 'uhh', ko: 'Uhh', en: 'Uhh', emoji: '😮', clr: '#ffbe0b', file: 'audio/uhhh.MP3' },
+  { id: 'running', ko: '뛰는놈', en: 'Running', emoji: '🏃', clr: '#ffbe0b', file: 'audio/뛰는놈.MP3' },
+  { id: 'flying', ko: '나는놈', en: 'Flying', emoji: '🦅', clr: '#00f5d4', file: 'audio/나는놈.MP3' },
+  { id: 'woman', ko: '여자', en: 'Woman', emoji: '💃', clr: '#ff4dac', file: 'audio/여짜.mp3' },
+  { id: 'perfect', ko: '완전', en: 'Perfect', emoji: '✨', clr: '#ff006e', file: 'audio/완전.MP3' }
 ];
 
 const COLS = 16;
