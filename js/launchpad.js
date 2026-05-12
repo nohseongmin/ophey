@@ -59,22 +59,6 @@ function preloadAllSounds() {
   });
 }
 
-function playAccent(accent) {
-  if (!accent) return;
-  try {
-    const ctx = getAudioCtx();
-    const osc = ctx.createOscillator();
-    const g = ctx.createGain();
-    osc.connect(g);
-    g.connect(masterGain);
-    osc.type = accent.type;
-    osc.frequency.value = accent.freq;
-    g.gain.setValueAtTime(0.35, ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + accent.dur);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + accent.dur + 0.05);
-  } catch (e) { /* silent fail */ }
-}
 
 async function playAudioFile(url) {
   if (!url) return;
@@ -91,7 +75,6 @@ async function playAudioFile(url) {
 }
 
 function playSound(sound) {
-  if (sound.accent) playAccent(sound.accent);
   if (sound.file) playAudioFile(sound.file);
 }
 
