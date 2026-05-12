@@ -175,19 +175,22 @@ function base64ToBytes(base64) {
 }
 
 function exportPattern() {
-  const bytes = new Uint8Array(1 + MAKER_SOUNDS.length * 2);
-  bytes[0] = bpm;
-  
+  let activeIndices = [];
   MAKER_SOUNDS.forEach((s, ri) => {
-    let rowVal = 0;
     if (grid[ri]) {
       for (let c = 0; c < COLS; c++) {
-        if (grid[ri][c]) rowVal |= (1 << c);
+        if (grid[ri][c]) {
+          activeIndices.push(ri * COLS + c);
+        }
       }
     }
-    bytes[1 + ri * 2] = (rowVal >> 8) & 0xFF;
-    bytes[2 + ri * 2] = rowVal & 0xFF;
   });
+
+  const bytes = new Uint8Array(1 + activeIndices.length);
+  bytes[0] = bpm;
+  for (let i = 0; i < activeIndices.length; i++) {
+    bytes[1 + i] = activeIndices[i];
+  }
 
   const code = bytesToBase64(bytes);
   const shareInput = document.getElementById('shareInput');
@@ -206,7 +209,7 @@ function importPattern() {
   if (!code) return;
   
   const bytes = base64ToBytes(code);
-  if (!bytes || bytes.length < 1 + MAKER_SOUNDS.length * 2) {
+  if (!bytes || bytes.length === 0) {
     alert('잘못된 코드 형식입니다.');
     return;
   }
@@ -220,23 +223,23 @@ function importPattern() {
   }
   
   for (let ri = 0; ri < MAKER_SOUNDS.length; ri++) {
-    const high = bytes[1 + ri * 2];
-    const low = bytes[2 + ri * 2];
-    const rowVal = (high << 8) | low;
-    
-    grid[ri] = grid[ri] || new Array(COLS).fill(false);
-    for (let c = 0; c < COLS; c++) {
-      grid[ri][c] = (rowVal & (1 << c)) !== 0;
+    grid[ri] = new Array(COLS).fill(false);
+  }
+  
+  for (let i = 1; i < bytes.length; i++) {
+    const idx = bytes[i];
+    const ri = Math.floor(idx / COLS);
+    const c = idx % COLS;
+    if (ri < MAKER_SOUNDS.length) {
+      grid[ri][c] = true;
     }
   }
   
   MAKER_SOUNDS.forEach((s, ri) => {
-    if (grid[ri]) {
-      for (let c = 0; c < COLS; c++) {
-        const cell = document.querySelector(`.seq-cell[data-row="${ri}"][data-col="${c}"]`);
-        if (cell) {
-          cell.classList.toggle('active', grid[ri][c]);
-        }
+    for (let c = 0; c < COLS; c++) {
+      const cell = document.querySelector(`.seq-cell[data-row="${ri}"][data-col="${c}"]`);
+      if (cell) {
+        cell.classList.toggle('active', grid[ri][c]);
       }
     }
   });
