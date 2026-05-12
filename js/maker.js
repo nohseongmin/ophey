@@ -151,8 +151,33 @@ function clearGrid() {
   applyLang();
 }
 
+function bytesToBase64(bytes) {
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function base64ToBytes(base64) {
+  try {
+    let b64 = base64.replace(/-/g, '+').replace(/_/g, '/');
+    while (b64.length % 4) b64 += '=';
+    const binary = atob(b64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes;
+  } catch(e) {
+    return null;
+  }
+}
+
 function exportPattern() {
-  let parts = [bpm];
+  const bytes = new Uint8Array(1 + MAKER_SOUNDS.length * 2);
+  bytes[0] = bpm;
+  
   MAKER_SOUNDS.forEach((s, ri) => {
     let rowVal = 0;
     if (grid[ri]) {
@@ -160,9 +185,11 @@ function exportPattern() {
         if (grid[ri][c]) rowVal |= (1 << c);
       }
     }
-    parts.push(rowVal.toString(16).padStart(4, '0'));
+    bytes[1 + ri * 2] = (rowVal >> 8) & 0xFF;
+    bytes[2 + ri * 2] = rowVal & 0xFF;
   });
-  const code = parts.join('-');
+
+  const code = bytesToBase64(bytes);
   const shareInput = document.getElementById('shareInput');
   shareInput.value = code;
   shareInput.select();
@@ -177,14 +204,15 @@ function importPattern() {
   const shareInput = document.getElementById('shareInput');
   const code = shareInput.value.trim();
   if (!code) return;
-  const parts = code.split('-');
-  if (parts.length < 2) {
+  
+  const bytes = base64ToBytes(code);
+  if (!bytes || bytes.length < 1 + MAKER_SOUNDS.length * 2) {
     alert('잘못된 코드 형식입니다.');
     return;
   }
   
-  const newBpm = parseInt(parts[0], 10);
-  if (!isNaN(newBpm) && newBpm >= 60 && newBpm <= 200) {
+  const newBpm = bytes[0];
+  if (newBpm >= 60 && newBpm <= 200) {
     bpm = newBpm;
     document.getElementById('bpmSlider').value = bpm;
     document.getElementById('bpmVal').textContent = bpm;
@@ -192,14 +220,13 @@ function importPattern() {
   }
   
   for (let ri = 0; ri < MAKER_SOUNDS.length; ri++) {
-    if (ri + 1 < parts.length) {
-      const rowVal = parseInt(parts[ri + 1], 16);
-      if (!isNaN(rowVal)) {
-        grid[ri] = grid[ri] || new Array(COLS).fill(false);
-        for (let c = 0; c < COLS; c++) {
-          grid[ri][c] = (rowVal & (1 << c)) !== 0;
-        }
-      }
+    const high = bytes[1 + ri * 2];
+    const low = bytes[2 + ri * 2];
+    const rowVal = (high << 8) | low;
+    
+    grid[ri] = grid[ri] || new Array(COLS).fill(false);
+    for (let c = 0; c < COLS; c++) {
+      grid[ri][c] = (rowVal & (1 << c)) !== 0;
     }
   }
   
