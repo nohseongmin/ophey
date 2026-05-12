@@ -1,15 +1,20 @@
-// maker.js — sequencer logic
-// SOUNDS must be loaded from launchpad.js (shared via index)
-// For maker.html, we duplicate the minimal SOUNDS def here
+// ──────────────────────────────────────────────
+//  maker.js  —  Sequencer with real audio files
+// ──────────────────────────────────────────────
+
 const MAKER_SOUNDS = [
-  { id:'ophey',  ko:'옵 헤이~',   en:'Op Hey~',   emoji:'🎤', freq:523, type:'sine',     dur:0.5, clr:'#ff006e' },
-  { id:'gangnam',ko:'강남스타일', en:'Gangnam',    emoji:'🕺', freq:392, type:'square',   dur:0.4, clr:'#8338ec' },
-  { id:'sexy',   ko:'섹시레이디', en:'Sexy Lady',  emoji:'💃', freq:440, type:'sine',     dur:0.4, clr:'#ff4dac' },
-  { id:'hey',    ko:'헤이~',      en:'Heyyy~',     emoji:'🙌', freq:587, type:'sine',     dur:0.3, clr:'#00f5d4' },
-  { id:'horse',  ko:'말 울음',    en:'Horse',      emoji:'🐴', freq:180, type:'sawtooth', dur:0.4, clr:'#ffbe0b' },
-  { id:'eeeee',  ko:'에에에에',   en:'Eeeeee',     emoji:'😱', freq:880, type:'sine',     dur:0.5, clr:'#ff006e' },
-  { id:'human',  ko:'인간 여자',  en:'Human Woman',emoji:'👩', freq:330, type:'triangle', dur:0.4, clr:'#8338ec' },
-  { id:'bumpy',  ko:'울퉁불퉁',   en:'Bumpy',      emoji:'🏋️', freq:200, type:'sawtooth', dur:0.3, clr:'#ffbe0b' },
+  { id: 'gangnam', ko: '강남', en: 'Gangnam', emoji: '🕺', clr: '#8338ec', file: 'audio/강남.MP3', accent: { freq: 130, type: 'sawtooth', dur: 0.25 } },
+  { id: 'op', ko: '옵', en: 'Op', emoji: '🎙️', clr: '#ff006e', file: 'audio/옵.MP3', accent: { freq: 480, type: 'sine', dur: 0.15 } },
+  { id: 'hey', ko: '헤이', en: 'Hey', emoji: '🎤', clr: '#ff4dac', file: 'audio/헤이.MP3', accent: { freq: 600, type: 'sine', dur: 0.4 } },
+  { id: 'gangnamstyle', ko: '강남스타일', en: 'Gangnam Style', emoji: '💥', clr: '#8338ec', file: 'audio/강남style.MP3', accent: { freq: 150, type: 'sawtooth', dur: 0.3 } },
+  { id: 'human', ko: '인간', en: 'Human', emoji: '🧑', clr: '#00f5d4', file: 'audio/인간.MP3', accent: { freq: 340, type: 'triangle', dur: 0.3 } },
+  { id: 'sanae', ko: '사나이', en: 'Real Man', emoji: '💪', clr: '#00f5d4', file: 'audio/싸나에.MP3', accent: { freq: 220, type: 'triangle', dur: 0.5 } },
+  { id: 'bumpy', ko: '울퉁불퉁', en: 'Bumpy', emoji: '🏋️', clr: '#00f5d4', file: 'audio/울퉁붕퉁.MP3', accent: { freq: 80, type: 'sawtooth', dur: 0.4 } },
+  { id: 'uhh', ko: 'Uhh', en: 'Uhh', emoji: '😮', clr: '#ffbe0b', file: 'audio/uhhh.MP3', accent: { freq: 150, type: 'triangle', dur: 0.4 } },
+  { id: 'running', ko: '뛰는놈', en: 'Running', emoji: '🏃', clr: '#ffbe0b', file: 'audio/뛰는놈.MP3', accent: { freq: 400, type: 'sine', dur: 0.3 } },
+  { id: 'flying', ko: '나는놈', en: 'Flying', emoji: '🦅', clr: '#00f5d4', file: 'audio/나는놈.MP3', accent: { freq: 800, type: 'sine', dur: 0.6 } },
+  { id: 'woman', ko: '여자', en: 'Woman', emoji: '💃', clr: '#ff4dac', file: 'audio/여짜.mp3', accent: { freq: 440, type: 'sine', dur: 0.45 } },
+  { id: 'perfect', ko: '완전', en: 'Perfect', emoji: '✨', clr: '#ff006e', file: 'audio/완전.MP3', accent: { freq: 500, type: 'sine', dur: 0.3 } }
 ];
 
 const COLS = 16;
@@ -18,7 +23,8 @@ let isPlaying = false;
 let currentCol = -1;
 let intervalId = null;
 let audioCtx2 = null;
-let grid = []; // grid[row][col] = bool
+let grid = [];
+const audioBuffers2 = {};
 
 function getCtx() {
   if (!audioCtx2) audioCtx2 = new (window.AudioContext || window.webkitAudioContext)();
@@ -26,16 +32,61 @@ function getCtx() {
   return audioCtx2;
 }
 
-function playMakerSound(s) {
+// Preload a single file
+async function loadAudioBuffer2(url) {
+  if (audioBuffers2[url]) return audioBuffers2[url];
+  try {
+    const ctx = getCtx();
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const arrayBuffer = await res.arrayBuffer();
+    const buffer = await ctx.decodeAudioData(arrayBuffer);
+    audioBuffers2[url] = buffer;
+    return buffer;
+  } catch (e) {
+    console.warn('Audio file not found yet:', url);
+    return null;
+  }
+}
+
+function preloadMakerSounds() {
+  MAKER_SOUNDS.forEach(s => {
+    if (s.file) loadAudioBuffer2(s.file);
+  });
+}
+
+function playAccent(accent) {
+  if (!accent) return;
+  try {
+    const ctx = getCtx();
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.connect(g); g.connect(ctx.destination);
+    osc.type = accent.type;
+    osc.frequency.value = accent.freq;
+    g.gain.setValueAtTime(0.4, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + accent.dur);
+    osc.start(); osc.stop(ctx.currentTime + accent.dur + 0.05);
+  } catch (e) { /* silent */ }
+}
+
+async function playAudioFileMaker(url) {
+  if (!url) return;
   const ctx = getCtx();
-  const osc = ctx.createOscillator();
-  const g = ctx.createGain();
-  osc.connect(g); g.connect(ctx.destination);
-  osc.type = s.type;
-  osc.frequency.value = s.freq;
-  g.gain.setValueAtTime(0.4, ctx.currentTime);
-  g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + s.dur);
-  osc.start(); osc.stop(ctx.currentTime + s.dur + 0.05);
+  const buffer = await loadAudioBuffer2(url);
+  if (!buffer) return;
+  
+  try {
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(ctx.destination);
+    source.start(0);
+  } catch (e) { console.error(e); }
+}
+
+function playMakerSound(s) {
+  if (s.accent) playAccent(s.accent);
+  if (s.file) playAudioFileMaker(s.file);
 }
 
 function previewSound(rowIdx) {
@@ -47,12 +98,12 @@ function buildSeqGrid() {
   container.innerHTML = '';
 
   // header row
-  const headerLabel = document.createElement('div'); // empty corner
+  const headerLabel = document.createElement('div');
   container.appendChild(headerLabel);
   for (let c = 0; c < COLS; c++) {
     const h = document.createElement('div');
     h.className = 'seq-beat-header' + (c % 4 === 0 ? ' bar-start' : '');
-    h.textContent = c % 4 === 0 ? (c/4+1) : '·';
+    h.textContent = c % 4 === 0 ? (c / 4 + 1) : '·';
     container.appendChild(h);
   }
 
@@ -84,11 +135,9 @@ function buildSeqGrid() {
 
 function tick() {
   currentCol = (currentCol + 1) % COLS;
-  // highlight column
   document.querySelectorAll('.seq-cell').forEach(cell => {
     cell.classList.toggle('playing-col', parseInt(cell.dataset.col) === currentCol);
   });
-  // play active sounds
   MAKER_SOUNDS.forEach((s, ri) => {
     if (grid[ri] && grid[ri][currentCol]) playMakerSound(s);
   });
@@ -97,7 +146,7 @@ function tick() {
 function startPlay() {
   if (isPlaying) return;
   isPlaying = true;
-  const msPerBeat = (60000 / bpm) / 4; // 16th notes
+  const msPerBeat = (60000 / bpm) / 4;
   document.getElementById('btnPlay').textContent = t('stop');
   intervalId = setInterval(tick, msPerBeat);
 }
@@ -117,6 +166,7 @@ function clearGrid() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  preloadMakerSounds();
   buildSeqGrid();
 
   document.getElementById('btnPlay').addEventListener('click', () => {

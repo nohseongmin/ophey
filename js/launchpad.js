@@ -1,18 +1,27 @@
+// ──────────────────────────────────────────────
+//  launchpad.js  —  Real vocal sounds via TTS
+// ──────────────────────────────────────────────
+
 const SOUNDS = [
-  { id:'gangnam',ko:'강남',    en:'Gangnam', emoji:'🕺', freq:392, type:'square',   dur:0.6, clr:'#8338ec' },
-  { id:'op',     ko:'옵',      en:'Op',      emoji:'🎙️', freq:480, type:'sine',     dur:0.4, clr:'#ff006e' },
-  { id:'hey',    ko:'헤이',    en:'Hey',     emoji:'🎤', freq:560, type:'sine',     dur:0.5, clr:'#ff4dac' },
-  { id:'human',  ko:'인간',    en:'Human',   emoji:'🧑', freq:330, type:'triangle', dur:0.5, clr:'#00f5d4' },
-  { id:'woman',  ko:'여자',    en:'Woman',   emoji:'👩', freq:280, type:'triangle', dur:0.5, clr:'#ff006e' },
-  { id:'sanae',  ko:'사나에',  en:'Sanae',   emoji:'🌸', freq:660, type:'sine',     dur:0.6, clr:'#8338ec' },
-  { id:'uhh',    ko:'uhh',     en:'uhh',     emoji:'😮', freq:150, type:'triangle', dur:0.4, clr:'#ffbe0b' },
-  { id:'eeeee',  ko:'에에에',  en:'Eee',     emoji:'😱', freq:880, type:'sine',     dur:0.9, clr:'#ff006e' },
-  { id:'bumpy',  ko:'울퉁불퉁',en:'Bumpy',   emoji:'💪', freq:200, type:'sawtooth', dur:0.5, clr:'#00f5d4' },
+  { id: 'gangnam', ko: '강남', en: 'Gangnam', emoji: '🕺', clr: '#8338ec', file: 'audio/강남.MP3', accent: { freq: 130, type: 'sawtooth', dur: 0.25 } },
+  { id: 'op', ko: '옵', en: 'Op', emoji: '🎙️', clr: '#ff006e', file: 'audio/옵.MP3', accent: { freq: 480, type: 'sine', dur: 0.15 } },
+  { id: 'hey', ko: '헤이', en: 'Hey', emoji: '🎤', clr: '#ff4dac', file: 'audio/헤이.MP3', accent: { freq: 600, type: 'sine', dur: 0.4 } },
+  { id: 'gangnamstyle', ko: '강남스타일', en: 'Gangnam Style', emoji: '💥', clr: '#8338ec', file: 'audio/강남style.MP3', accent: { freq: 150, type: 'sawtooth', dur: 0.3 } },
+  { id: 'human', ko: '인간', en: 'Human', emoji: '🧑', clr: '#00f5d4', file: 'audio/인간.MP3', accent: { freq: 340, type: 'triangle', dur: 0.3 } },
+  { id: 'sanae', ko: '사나이', en: 'Real Man', emoji: '💪', clr: '#00f5d4', file: 'audio/싸나에.MP3', accent: { freq: 220, type: 'triangle', dur: 0.5 } },
+  { id: 'bumpy', ko: '울퉁불퉁', en: 'Bumpy', emoji: '🏋️', clr: '#00f5d4', file: 'audio/울퉁붕퉁.MP3', accent: { freq: 80, type: 'sawtooth', dur: 0.4 } },
+  { id: 'uhh', ko: 'Uhh', en: 'Uhh', emoji: '😮', clr: '#ffbe0b', file: 'audio/uhhh.MP3', accent: { freq: 150, type: 'triangle', dur: 0.4 } },
+  { id: 'running', ko: '뛰는놈', en: 'Running', emoji: '🏃', clr: '#ffbe0b', file: 'audio/뛰는놈.MP3', accent: { freq: 400, type: 'sine', dur: 0.3 } },
+  { id: 'flying', ko: '나는놈', en: 'Flying', emoji: '🦅', clr: '#00f5d4', file: 'audio/나는놈.MP3', accent: { freq: 800, type: 'sine', dur: 0.6 } },
+  { id: 'woman', ko: '여자', en: 'Woman', emoji: '💃', clr: '#ff4dac', file: 'audio/여짜.mp3', accent: { freq: 440, type: 'sine', dur: 0.45 } },
+  { id: 'perfect', ko: '완전', en: 'Perfect', emoji: '✨', clr: '#ff006e', file: 'audio/완전.MP3', accent: { freq: 500, type: 'sine', dur: 0.3 } }
 ];
 
+// ── Audio context ──────────────
 let audioCtx = null;
 let masterGain = null;
 let volume = 0.6;
+const audioBuffers = {};
 
 function getAudioCtx() {
   if (!audioCtx) {
@@ -25,22 +34,66 @@ function getAudioCtx() {
   return audioCtx;
 }
 
-function playSound(sound) {
-  const ctx = getAudioCtx();
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.connect(gain);
-  gain.connect(masterGain);
-  osc.type = sound.type;
-  osc.frequency.setValueAtTime(sound.freq, ctx.currentTime);
-  // slight pitch slide for character
-  osc.frequency.exponentialRampToValueAtTime(sound.freq * 0.85, ctx.currentTime + sound.dur);
-  gain.gain.setValueAtTime(0.5, ctx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + sound.dur);
-  osc.start(ctx.currentTime);
-  osc.stop(ctx.currentTime + sound.dur + 0.05);
+// Preload a single file
+async function loadAudioBuffer(url) {
+  if (audioBuffers[url]) return audioBuffers[url];
+  try {
+    const ctx = getAudioCtx();
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const arrayBuffer = await res.arrayBuffer();
+    const buffer = await ctx.decodeAudioData(arrayBuffer);
+    audioBuffers[url] = buffer;
+    return buffer;
+  } catch (e) {
+    console.warn('Audio file not found yet:', url);
+    return null;
+  }
 }
 
+function preloadAllSounds() {
+  SOUNDS.forEach(s => {
+    if (s.file) loadAudioBuffer(s.file);
+  });
+}
+
+function playAccent(accent) {
+  if (!accent) return;
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.connect(g);
+    g.connect(masterGain);
+    osc.type = accent.type;
+    osc.frequency.value = accent.freq;
+    g.gain.setValueAtTime(0.35, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + accent.dur);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + accent.dur + 0.05);
+  } catch (e) { /* silent fail */ }
+}
+
+async function playAudioFile(url) {
+  if (!url) return;
+  const ctx = getAudioCtx();
+  const buffer = await loadAudioBuffer(url);
+  if (!buffer) return;
+  
+  try {
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(masterGain);
+    source.start(0);
+  } catch (e) { console.error(e); }
+}
+
+function playSound(sound) {
+  if (sound.accent) playAccent(sound.accent);
+  if (sound.file) playAudioFile(sound.file);
+}
+
+// ── Build pad grid ────────────────────────────
 function buildGrid() {
   const grid = document.getElementById('padGrid');
   SOUNDS.forEach(s => {
@@ -52,13 +105,14 @@ function buildGrid() {
     btn.addEventListener('click', () => {
       playSound(s);
       btn.classList.add('playing');
-      setTimeout(() => btn.classList.remove('playing'), (s.dur * 1000) + 100);
+      setTimeout(() => btn.classList.remove('playing'), 500);
     });
     grid.appendChild(btn);
   });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  preloadAllSounds();
   buildGrid();
 
   document.getElementById('btnStop').addEventListener('click', () => {
@@ -70,14 +124,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (masterGain) masterGain.gain.value = volume;
   });
 
-  // keyboard shortcuts 1-9, q-p
-  const keys = '1234567890qwertyuiop'.split('');
+  // keyboard shortcuts 1–0, q–p, a-d
+  const keys = '1234567890qwertyuiopasdfghjkl'.split('');
   document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT') return;
     const idx = keys.indexOf(e.key.toLowerCase());
     if (idx >= 0 && idx < SOUNDS.length) {
       playSound(SOUNDS[idx]);
       const btn = document.querySelectorAll('.pad-btn')[idx];
-      if (btn) { btn.classList.add('playing'); setTimeout(() => btn.classList.remove('playing'), 300); }
+      if (btn) { btn.classList.add('playing'); setTimeout(() => btn.classList.remove('playing'), 500); }
     }
   });
 });

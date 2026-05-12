@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>효과음 추출 — 옵헤이</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .export-wrap {
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+    .export-card {
+      background: #12121a;
+      border: 1px solid #ffffff12;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin-bottom: 16px;
+    }
+    .export-card h2 {
+      font-size: 1.6rem;
+      font-weight: 900;
+      background: linear-gradient(90deg, #ff006e, #8338ec);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+    .export-card p { color: #888; font-size: 0.9rem; margin-bottom: 24px; }
+
+    .sound-list { display: flex; flex-direction: column; gap: 10px; }
+    .sound-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #0e0e18;
+      border: 1px solid #ffffff0f;
+      border-radius: 10px;
+      padding: 10px 14px;
+    }
+    .sound-row .emoji { font-size: 1.4rem; flex-shrink: 0; }
+    .sound-row .name { flex: 1; font-weight: 700; font-size: 0.9rem; }
+    .sound-row .info { font-size: 0.75rem; color: #555; }
+    .sound-row .btn-dl {
+      padding: 7px 16px;
+      border-radius: 8px;
+      border: 1px solid #8338ec66;
+      background: #8338ec1a;
+      color: #8338ec;
+      font-family: inherit;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .sound-row .btn-dl:hover { background: #8338ec; color: #fff; }
+    .sound-row .btn-dl.done { border-color: #00f5d466; background: #00f5d41a; color: #00f5d4; }
+
+    .btn-export-all {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, #ff006e, #8338ec);
+      color: #fff;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-bottom: 24px;
+      transition: all 0.2s;
+      box-shadow: 0 0 20px #ff006e55;
+    }
+    .btn-export-all:hover { filter: brightness(1.15); transform: translateY(-1px); }
+
+    .progress-bar-wrap { background: #0e0e18; border-radius: 8px; height: 8px; overflow: hidden; display: none; margin-bottom: 16px; }
+    .progress-bar { height: 100%; background: linear-gradient(90deg, #ff006e, #8338ec); width: 0%; transition: width 0.3s; border-radius: 8px; }
+
+    .status-msg { text-align: center; color: #888; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="nav-logo">🎤 옵헤이</a>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">런치패드</a>
+      <a href="maker.html" class="nav-link">메이커</a>
+      <a href="export.html" class="nav-link active">효과음 추출</a>
+    </div>
+  </nav>
+
+  <div class="export-wrap">
+    <div class="export-card">
+      <h2>🎵 효과음 WAV 추출</h2>
+      <p>각 효과음을 WAV 파일로 다운로드할 수 있습니다. 전체 추출 또는 개별 다운로드 모두 지원합니다.</p>
+
+      <button class="btn-export-all" id="btnExportAll">⬇ 전체 효과음 추출 (ZIP)</button>
+      <div class="progress-bar-wrap" id="progressWrap">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+      <div class="status-msg" id="statusMsg"></div>
+
+      <div class="sound-list" id="soundList"></div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script>
+    const ALL_SOUNDS = [
+      { id:'gangnam', ko:'강남',     en:'Gangnam',    emoji:'🕺', freq:392, type:'square',   dur:0.6, clr:'#8338ec' },
+      { id:'op',      ko:'옵',       en:'Op',         emoji:'🎙️', freq:480, type:'sine',     dur:0.4, clr:'#ff006e' },
+      { id:'hey',     ko:'헤이',     en:'Hey',        emoji:'🎤', freq:560, type:'sine',     dur:0.5, clr:'#ff4dac' },
+      { id:'human',   ko:'인간',     en:'Human',      emoji:'🧑', freq:330, type:'triangle', dur:0.5, clr:'#00f5d4' },
+      { id:'woman',   ko:'여자',     en:'Woman',      emoji:'👩', freq:280, type:'triangle', dur:0.5, clr:'#ff006e' },
+      { id:'sanae',   ko:'사나에',   en:'Sanae',      emoji:'🌸', freq:660, type:'sine',     dur:0.6, clr:'#8338ec' },
+      { id:'uhh',     ko:'uhh',      en:'Uhh',        emoji:'😮', freq:150, type:'triangle', dur:0.4, clr:'#ffbe0b' },
+      { id:'eeeee',   ko:'에에에',   en:'Eee',        emoji:'😱', freq:880, type:'sine',     dur:0.9, clr:'#ff006e' },
+      { id:'bumpy',   ko:'울퉁불퉁', en:'Bumpy',      emoji:'💪', freq:200, type:'sawtooth', dur:0.5, clr:'#00f5d4' },
+      // maker sounds
+      { id:'ophey',   ko:'옵 헤이~', en:'Op Hey',     emoji:'🎤', freq:523, type:'sine',     dur:0.5, clr:'#ff006e' },
+      { id:'sexy',    ko:'섹시레이디',en:'Sexy Lady',  emoji:'💃', freq:440, type:'sine',     dur:0.4, clr:'#ff4dac' },
+      { id:'horse',   ko:'말 울음',  en:'Horse',      emoji:'🐴', freq:180, type:'sawtooth', dur:0.4, clr:'#ffbe0b' },
+    ];
+
+    // Deduplicate by id
+    const SOUNDS = [...new Map(ALL_SOUNDS.map(s => [s.id, s])).values()];
+
+    // Render sound to WAV ArrayBuffer using OfflineAudioContext
+    async function renderSoundToWav(sound) {
+      const sampleRate = 44100;
+      const dur = sound.dur + 0.1;
+      const frames = Math.ceil(sampleRate * dur);
+      const ctx = new OfflineAudioContext(1, frames, sampleRate);
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = sound.type;
+      osc.frequency.setValueAtTime(sound.freq, 0);
+      osc.frequency.exponentialRampToValueAtTime(sound.freq * 0.85, sound.dur);
+      gain.gain.setValueAtTime(0.5, 0);
+      gain.gain.exponentialRampToValueAtTime(0.001, sound.dur);
+      osc.start(0);
+      osc.stop(sound.dur + 0.05);
+
+      const rendered = await ctx.startRendering();
+      return audioBufferToWav(rendered);
+    }
+
+    // Convert AudioBuffer to WAV ArrayBuffer
+    function audioBufferToWav(buffer) {
+      const numChannels = 1;
+      const sampleRate = buffer.sampleRate;
+      const format = 1; // PCM
+      const bitDepth = 16;
+      const samples = buffer.getChannelData(0);
+      const byteRate = (sampleRate * numChannels * bitDepth) / 8;
+      const blockAlign = (numChannels * bitDepth) / 8;
+      const dataSize = samples.length * 2;
+      const bufLen = 44 + dataSize;
+      const ab = new ArrayBuffer(bufLen);
+      const view = new DataView(ab);
+
+      function writeStr(offset, str) {
+        for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+      }
+      writeStr(0, 'RIFF');
+      view.setUint32(4, 36 + dataSize, true);
+      writeStr(8, 'WAVE');
+      writeStr(12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, format, true);
+      view.setUint16(22, numChannels, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, byteRate, true);
+      view.setUint16(32, blockAlign, true);
+      view.setUint16(34, bitDepth, true);
+      writeStr(36, 'data');
+      view.setUint32(40, dataSize, true);
+      let offset = 44;
+      for (let i = 0; i < samples.length; i++) {
+        const s = Math.max(-1, Math.min(1, samples[i]));
+        view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+        offset += 2;
+      }
+      return ab;
+    }
+
+    function downloadBlob(ab, filename) {
+      const blob = new Blob([ab], { type: 'audio/wav' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    // Build UI
+    const list = document.getElementById('soundList');
+    SOUNDS.forEach((s, i) => {
+      const row = document.createElement('div');
+      row.className = 'sound-row';
+      row.innerHTML = `
+        <span class="emoji">${s.emoji}</span>
+        <div class="name">${s.ko} <span style="color:#555;font-weight:400;">(${s.en})</span></div>
+        <div class="info">${s.type} · ${s.freq}Hz · ${s.dur}s</div>
+        <button class="btn-dl" id="dl_${s.id}">⬇ 다운로드</button>
+      `;
+      list.appendChild(row);
+
+      document.getElementById(`dl_${s.id}`).addEventListener('click', async () => {
+        const btn = document.getElementById(`dl_${s.id}`);
+        btn.textContent = '렌더링...';
+        btn.disabled = true;
+        try {
+          const wav = await renderSoundToWav(s);
+          downloadBlob(wav, `ophey_${s.id}.wav`);
+          btn.textContent = '✓ 완료';
+          btn.classList.add('done');
+        } catch(e) {
+          btn.textContent = '오류';
+          console.error(e);
+        }
+        btn.disabled = false;
+      });
+    });
+
+    // Export all as ZIP
+    document.getElementById('btnExportAll').addEventListener('click', async () => {
+      const allBtn = document.getElementById('btnExportAll');
+      const progressWrap = document.getElementById('progressWrap');
+      const progressBar = document.getElementById('progressBar');
+      const statusMsg = document.getElementById('statusMsg');
+
+      allBtn.disabled = true;
+      allBtn.textContent = '렌더링 중...';
+      progressWrap.style.display = 'block';
+      progressBar.style.width = '0%';
+
+      try {
+        const zip = new JSZip();
+        const folder = zip.folder('ophey_sounds');
+
+        for (let i = 0; i < SOUNDS.length; i++) {
+          const s = SOUNDS[i];
+          statusMsg.textContent = `${s.ko} 렌더링 중... (${i+1}/${SOUNDS.length})`;
+          progressBar.style.width = `${((i) / SOUNDS.length) * 100}%`;
+
+          const wav = await renderSoundToWav(s);
+          folder.file(`ophey_${s.id}.wav`, wav);
+
+          const btn = document.getElementById(`dl_${s.id}`);
+          if (btn) { btn.textContent = '✓ 완료'; btn.classList.add('done'); }
+        }
+
+        progressBar.style.width = '100%';
+        statusMsg.textContent = 'ZIP 생성 중...';
+
+        const blob = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'ophey_sounds.zip';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+
+        statusMsg.textContent = '✅ 전체 추출 완료! ophey_sounds.zip 다운로드됨';
+        allBtn.textContent = '✓ 완료';
+      } catch(e) {
+        statusMsg.textContent = '오류 발생: ' + e.message;
+        allBtn.textContent = '⬇ 전체 효과음 추출 (ZIP)';
+        console.error(e);
+      }
+      allBtn.disabled = false;
+    });
+  </script>
+</body>
+</html>

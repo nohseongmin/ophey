@@ -113,6 +113,7 @@ main {
   font-size: 2rem;
   font-weight: 900;
   margin-bottom: 8px;
+  text-align: center;
 }
 .page-title span {
   background: linear-gradient(90deg, var(--pink), var(--purple));
@@ -120,12 +121,13 @@ main {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-.page-subtitle { color: var(--muted); font-size: 0.95rem; margin-bottom: 32px; }
+.page-subtitle { color: var(--muted); font-size: 0.95rem; margin-bottom: 32px; text-align: center; }
 
 /* ===== LAUNCHPAD ===== */
 .controls-bar {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
   margin-bottom: 24px;
   flex-wrap: wrap;
@@ -152,9 +154,10 @@ input[type=range] {
 
 .pad-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
   max-width: 640px;
+  margin: 0 auto;
 }
 
 .pad-btn {
@@ -204,6 +207,7 @@ input[type=range] {
 .maker-controls {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
   margin-bottom: 24px;
   flex-wrap: wrap;
@@ -238,7 +242,7 @@ input[type=range] {
 }
 .btn-secondary:hover { background: #ffffff18; }
 
-.bpm-wrap { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--muted); margin-left: auto; }
+.bpm-wrap { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--muted); }
 .bpm-val { color: var(--cyan); font-weight: 700; min-width: 40px; }
 
 .sequencer-wrap {
@@ -322,7 +326,7 @@ input[type=range] {
 
 /* RESPONSIVE */
 @media (max-width: 600px) {
-  .pad-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .pad-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
   .pad-btn { height: 75px; }
   .pad-emoji { font-size: 1.4rem; }
   .pad-label { font-size: 0.68rem; }
