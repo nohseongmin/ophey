@@ -174,6 +174,12 @@ function base64ToBytes(base64) {
   }
 }
 
+// Pattern share-code byte layout (before base64url encoding), shared by
+// exportPattern/importPattern:
+//   byte 0    → BPM (60–200, fits a single byte)
+//   byte 1..n → one byte per active cell, encoded as row * COLS + col
+// Only active cells are stored (sparse), so the code stays short even
+// though the grid itself is MAKER_SOUNDS.length * COLS cells.
 function exportPattern() {
   let activeIndices = [];
   MAKER_SOUNDS.forEach((s, ri) => {
