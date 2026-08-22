@@ -23,26 +23,26 @@ let bpm = 120;
 let isPlaying = false;
 let currentCol = -1;
 let intervalId = null;
-let audioCtx2 = null;
+let makerAudioCtx = null;
 let grid = [];
-const audioBuffers2 = {};
+const makerAudioBuffers = {};
 
 function getCtx() {
-  if (!audioCtx2) audioCtx2 = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx2.state === 'suspended') audioCtx2.resume();
-  return audioCtx2;
+  if (!makerAudioCtx) makerAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (makerAudioCtx.state === 'suspended') makerAudioCtx.resume();
+  return makerAudioCtx;
 }
 
 // Preload a single file
-async function loadAudioBuffer2(url) {
-  if (audioBuffers2[url]) return audioBuffers2[url];
+async function loadMakerAudioBuffer(url) {
+  if (makerAudioBuffers[url]) return makerAudioBuffers[url];
   try {
     const ctx = getCtx();
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const arrayBuffer = await res.arrayBuffer();
     const buffer = await ctx.decodeAudioData(arrayBuffer);
-    audioBuffers2[url] = buffer;
+    makerAudioBuffers[url] = buffer;
     return buffer;
   } catch (e) {
     console.warn('Audio file not found yet:', url);
@@ -52,7 +52,7 @@ async function loadAudioBuffer2(url) {
 
 function preloadMakerSounds() {
   MAKER_SOUNDS.forEach(s => {
-    if (s.file) loadAudioBuffer2(s.file);
+    if (s.file) loadMakerAudioBuffer(s.file);
   });
 }
 
@@ -60,7 +60,7 @@ function preloadMakerSounds() {
 async function playAudioFileMaker(url) {
   if (!url) return;
   const ctx = getCtx();
-  const buffer = await loadAudioBuffer2(url);
+  const buffer = await loadMakerAudioBuffer(url);
   if (!buffer) return;
   
   try {
