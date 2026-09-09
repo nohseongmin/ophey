@@ -94,8 +94,8 @@
 
   <div class="export-wrap">
     <div class="export-card">
-      <h2>🎵 효과음 WAV 추출</h2>
-      <p>각 효과음을 WAV 파일로 다운로드할 수 있습니다. 전체 추출 또는 개별 다운로드 모두 지원합니다.</p>
+      <h2>🎵 효과음 MP3 추출</h2>
+      <p>각 효과음을 MP3 파일로 다운로드할 수 있습니다. 전체 추출 또는 개별 다운로드 모두 지원합니다.</p>
 
       <button class="btn-export-all" id="btnExportAll">⬇ 전체 효과음 추출 (ZIP)</button>
       <div class="progress-bar-wrap" id="progressWrap">
@@ -109,89 +109,32 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script>
-    const ALL_SOUNDS = [
-      { id:'gangnam', ko:'강남',     en:'Gangnam',    emoji:'🕺', freq:392, type:'square',   dur:0.6, clr:'#8338ec' },
-      { id:'op',      ko:'옵',       en:'Op',         emoji:'🎙️', freq:480, type:'sine',     dur:0.4, clr:'#ff006e' },
-      { id:'hey',     ko:'헤이',     en:'Hey',        emoji:'🎤', freq:560, type:'sine',     dur:0.5, clr:'#ff4dac' },
-      { id:'human',   ko:'인간',     en:'Human',      emoji:'🧑', freq:330, type:'triangle', dur:0.5, clr:'#00f5d4' },
-      { id:'woman',   ko:'여자',     en:'Woman',      emoji:'👩', freq:280, type:'triangle', dur:0.5, clr:'#ff006e' },
-      { id:'sanae',   ko:'사나에',   en:'Sanae',      emoji:'🌸', freq:660, type:'sine',     dur:0.6, clr:'#8338ec' },
-      { id:'uhh',     ko:'uhh',      en:'Uhh',        emoji:'😮', freq:150, type:'triangle', dur:0.4, clr:'#ffbe0b' },
-      { id:'eeeee',   ko:'에에에',   en:'Eee',        emoji:'😱', freq:880, type:'sine',     dur:0.9, clr:'#ff006e' },
-      { id:'bumpy',   ko:'울퉁불퉁', en:'Bumpy',      emoji:'💪', freq:200, type:'sawtooth', dur:0.5, clr:'#00f5d4' },
-      // maker sounds
-      { id:'ophey',   ko:'옵 헤이~', en:'Op Hey',     emoji:'🎤', freq:523, type:'sine',     dur:0.5, clr:'#ff006e' },
-      { id:'sexy',    ko:'섹시레이디',en:'Sexy Lady',  emoji:'💃', freq:440, type:'sine',     dur:0.4, clr:'#ff4dac' },
-      { id:'horse',   ko:'말 울음',  en:'Horse',      emoji:'🐴', freq:180, type:'sawtooth', dur:0.4, clr:'#ffbe0b' },
+    // Same sound set the app plays (js/launchpad.js, js/maker.js)
+    const SOUNDS = [
+      { id: 'gangnam', ko: '강남', en: 'Gangnam', emoji: '🕺', clr: '#8338ec', file: 'audio/강남.MP3' },
+      { id: 'op', ko: '옵', en: 'Op', emoji: '🎙️', clr: '#ff006e', file: 'audio/옵.MP3' },
+      { id: 'hey', ko: '헤이', en: 'Hey', emoji: '🎤', clr: '#ff4dac', file: 'audio/헤이.MP3' },
+      { id: 'gangnamstyle', ko: '강남스타일', en: 'Gangnam Style', emoji: '💥', clr: '#8338ec', file: 'audio/강남style.MP3' },
+      { id: 'human', ko: '인간', en: 'Human', emoji: '🧑', clr: '#00f5d4', file: 'audio/인간.MP3' },
+      { id: 'human_like', ko: '인간적인', en: 'Human-like', emoji: '😌', clr: '#ffbe0b', file: 'audio/인간적인.MP3' },
+      { id: 'sanae', ko: '사나이', en: 'Real Man', emoji: '💪', clr: '#00f5d4', file: 'audio/싸나에.MP3' },
+      { id: 'bumpy', ko: '울퉁불퉁', en: 'Bumpy', emoji: '🏋️', clr: '#00f5d4', file: 'audio/울퉁붕퉁.MP3' },
+      { id: 'uhh', ko: 'Uhh', en: 'Uhh', emoji: '😮', clr: '#ffbe0b', file: 'audio/uhhh.MP3' },
+      { id: 'running', ko: '뛰는놈', en: 'Running', emoji: '🏃', clr: '#ffbe0b', file: 'audio/뛰는놈.MP3' },
+      { id: 'flying', ko: '나는놈', en: 'Flying', emoji: '🦅', clr: '#00f5d4', file: 'audio/나는놈.MP3' },
+      { id: 'woman', ko: '여자', en: 'Woman', emoji: '💃', clr: '#ff4dac', file: 'audio/여짜.mp3' },
+      { id: 'perfect', ko: '완전', en: 'Perfect', emoji: '✨', clr: '#ff006e', file: 'audio/완전.MP3' }
     ];
 
-    // Deduplicate by id
-    const SOUNDS = [...new Map(ALL_SOUNDS.map(s => [s.id, s])).values()];
-
-    // Render sound to WAV ArrayBuffer using OfflineAudioContext
-    async function renderSoundToWav(sound) {
-      const sampleRate = 44100;
-      const dur = sound.dur + 0.1;
-      const frames = Math.ceil(sampleRate * dur);
-      const ctx = new OfflineAudioContext(1, frames, sampleRate);
-
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.type = sound.type;
-      osc.frequency.setValueAtTime(sound.freq, 0);
-      osc.frequency.exponentialRampToValueAtTime(sound.freq * 0.85, sound.dur);
-      gain.gain.setValueAtTime(0.5, 0);
-      gain.gain.exponentialRampToValueAtTime(0.001, sound.dur);
-      osc.start(0);
-      osc.stop(sound.dur + 0.05);
-
-      const rendered = await ctx.startRendering();
-      return audioBufferToWav(rendered);
-    }
-
-    // Convert AudioBuffer to WAV ArrayBuffer
-    function audioBufferToWav(buffer) {
-      const numChannels = 1;
-      const sampleRate = buffer.sampleRate;
-      const format = 1; // PCM
-      const bitDepth = 16;
-      const samples = buffer.getChannelData(0);
-      const byteRate = (sampleRate * numChannels * bitDepth) / 8;
-      const blockAlign = (numChannels * bitDepth) / 8;
-      const dataSize = samples.length * 2;
-      const bufLen = 44 + dataSize;
-      const ab = new ArrayBuffer(bufLen);
-      const view = new DataView(ab);
-
-      function writeStr(offset, str) {
-        for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
-      }
-      writeStr(0, 'RIFF');
-      view.setUint32(4, 36 + dataSize, true);
-      writeStr(8, 'WAVE');
-      writeStr(12, 'fmt ');
-      view.setUint32(16, 16, true);
-      view.setUint16(20, format, true);
-      view.setUint16(22, numChannels, true);
-      view.setUint32(24, sampleRate, true);
-      view.setUint32(28, byteRate, true);
-      view.setUint16(32, blockAlign, true);
-      view.setUint16(34, bitDepth, true);
-      writeStr(36, 'data');
-      view.setUint32(40, dataSize, true);
-      let offset = 44;
-      for (let i = 0; i < samples.length; i++) {
-        const s = Math.max(-1, Math.min(1, samples[i]));
-        view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
-        offset += 2;
-      }
-      return ab;
+    // Fetch a bundled MP3 as raw bytes for download / zipping
+    async function fetchSoundBytes(sound) {
+      const res = await fetch(sound.file);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.arrayBuffer();
     }
 
     function downloadBlob(ab, filename) {
-      const blob = new Blob([ab], { type: 'audio/wav' });
+      const blob = new Blob([ab], { type: 'audio/mpeg' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -210,18 +153,18 @@
       row.innerHTML = `
         <span class="emoji">${s.emoji}</span>
         <div class="name">${s.ko} <span style="color:#555;font-weight:400;">(${s.en})</span></div>
-        <div class="info">${s.type} · ${s.freq}Hz · ${s.dur}s</div>
+        <div class="info">${s.file}</div>
         <button class="btn-dl" id="dl_${s.id}">⬇ 다운로드</button>
       `;
       list.appendChild(row);
 
       document.getElementById(`dl_${s.id}`).addEventListener('click', async () => {
         const btn = document.getElementById(`dl_${s.id}`);
-        btn.textContent = '렌더링...';
+        btn.textContent = '받는 중...';
         btn.disabled = true;
         try {
-          const wav = await renderSoundToWav(s);
-          downloadBlob(wav, `ophey_${s.id}.wav`);
+          const bytes = await fetchSoundBytes(s);
+          downloadBlob(bytes, `ophey_${s.id}.mp3`);
           btn.textContent = '✓ 완료';
           btn.classList.add('done');
         } catch(e) {
@@ -240,7 +183,7 @@
       const statusMsg = document.getElementById('statusMsg');
 
       allBtn.disabled = true;
-      allBtn.textContent = '렌더링 중...';
+      allBtn.textContent = '가져오는 중...';
       progressWrap.style.display = 'block';
       progressBar.style.width = '0%';
 
@@ -250,11 +193,11 @@
 
         for (let i = 0; i < SOUNDS.length; i++) {
           const s = SOUNDS[i];
-          statusMsg.textContent = `${s.ko} 렌더링 중... (${i+1}/${SOUNDS.length})`;
+          statusMsg.textContent = `${s.ko} 가져오는 중... (${i+1}/${SOUNDS.length})`;
           progressBar.style.width = `${((i) / SOUNDS.length) * 100}%`;
 
-          const wav = await renderSoundToWav(s);
-          folder.file(`ophey_${s.id}.wav`, wav);
+          const bytes = await fetchSoundBytes(s);
+          folder.file(`ophey_${s.id}.mp3`, bytes);
 
           const btn = document.getElementById(`dl_${s.id}`);
           if (btn) { btn.textContent = '✓ 완료'; btn.classList.add('done'); }

@@ -1,6 +1,6 @@
 const LANG = {
   ko: {
-    nav_pad: '런치패드', nav_maker: '메이커',
+    nav_pad: '런치패드', nav_maker: '메이커', nav_export: '효과음 추출',
     pad_title: '강남 옵 헤이', pad_subtitle: '버튼을 눌러 효과음을 재생하세요 🎵',
     stop_all: '⏹ 전체 정지', volume: '볼륨',
     maker_title: '강남스타일 메이커', maker_subtitle: '셀을 클릭해 비트를 만들어보세요',
@@ -8,7 +8,7 @@ const LANG = {
     disclaimer: 'All audio clips belong to their respective rights holders. Non-commercial fan site.',
   },
   en: {
-    nav_pad: 'Launchpad', nav_maker: 'Maker',
+    nav_pad: 'Launchpad', nav_maker: 'Maker', nav_export: 'Export',
     pad_title: 'Gangnam Op Hey', pad_subtitle: 'Press buttons to play sound effects 🎵',
     stop_all: '⏹ Stop All', volume: 'Vol',
     maker_title: 'Gangnam Style Maker', maker_subtitle: 'Click cells to build your beat',
